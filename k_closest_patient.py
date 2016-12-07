@@ -88,30 +88,6 @@ def main(k):
     train_error_vectors = {}
 
     train_errors = []
-
-    for f in training_files:
-
-        A, Y = read_data(f)
-
-        # print A.shape, Y.shape
-        A = create_columns(A)
-
-        # Now training
-        gbm = GradientBoostingRegressor(n_estimators=300, learning_rate=0.1,max_depth=3, random_state=0, loss='ls')
-        model = gbm.fit(A, Y)
-
-        # save the model
-        models[f.split('/')[-1]] = model
-
-        pred_y = model.predict(A)
-        train_error_vector = pred_y - Y
-        train_error = LA.norm(train_error_vector)
-
-        #saving training errors
-        train_error_vectors[f.split('/')[-1]] = train_error_vector
-        train_errors.append(train_error)
-
-
     # Now testing
     test_errors = [] # per patient
 
@@ -123,39 +99,28 @@ def main(k):
     test_percent_accurately_predicted_features = []
     error_vectors = []
     for f in testing_files:
-        A, Y = read_data(f)
+        A_test, Y_test = read_data(f)
 
-        k_nearest_patients = find_nearest_patients(A, training_files)
-        k_nearest_models = {}
-        for (d, patid) in k_nearest_patients[:k]:
-            k_nearest_models[patid] = models[patid]
+        # take the k closest patients
+        k_nearest_patients = find_nearest_patients(A_test, training_files)[:k]
 
+        pred_y_per_patient = np.zeros(Y_test.shape)
+        error_vector_per_patient = np.zeros(Y_test.shape)
 
-        A = create_columns(A)
+        for (distance, patid) in k_nearest_patients[:k]:
+            # now read patid file
+            filename = 'normalized_data/'+patid
+            closest_A, closest_Y = read_data(filename)
+            # get Y and use it to compute error by treating it
+            # as the label
+            error_vector = closest_Y - Y_test
 
-        pred_y_per_patient = np.zeros(Y.shape)
+            pred_y_per_patient = np.add(pred_y_per_patient, closest_Y)
+            error_vector_per_patient = np.add(error_vector_per_patient, error_vector)
 
-        # take the test point and make it go through
-        # all the models
-        error_per_model = 0.0
-
-        for (pat_no, model) in k_nearest_models.iteritems():
-            pred_y = model.predict(A)
-            error_v = pred_y - Y
-            error = LA.norm(error_v)
-
-            error_per_model += error
-
-            pred_y_per_patient = np.add(pred_y_per_patient, pred_y)
-
-        # Avg model prediction vector
-        pred_y = 1.0 / (len(k_nearest_models)) * pred_y_per_patient
-        error_vector = pred_y - Y
-        test_error = LA.norm(error_vector)
-
-        all_prediction_vectors.append(pred_y)
-        all_label_vectors.append(Y)
-        test_errors.append(test_error)
+        # avg predictions
+        pred_y = (1.0 / k) * pred_y_per_patient
+        error_vector =  (1.0 / k) * error_vector_per_patient
         error_vectors.append(error_vector)
 
 
@@ -186,30 +151,21 @@ def main(k):
     plt.xlabel("Patient Number")
     plt.title(
         "Percentage of features predicted correctly for patients from Test set")
-    plt.savefig(path + '/'+ str(k)+'_gbm_model_feature_accuracy.png')
+    name = 'clustering_figs/avg/'+ str(k) + '_avg_closest.png'
+    plt.savefig(name)
 
     fig2 = plt.figure(figsize=(12,16))
+
     # Error Matrix Plotting
     error_matrix = np.column_stack(error_vectors)
-
     # The Error Matrix Heat map
     ax = sns.heatmap(np.fabs(error_matrix), cmap="YlOrRd" )
     a = ax.get_figure()
-    a.savefig(path + str(k)+'_test_error_matrix.png')
+    name = 'clustering_figs/avg/'+ str(k) + '_avg_closest_error_matrix.png'
+    a.savefig(name)
 
-
-    for feature_num in range(100):
-        # for all 42 patients
-        fig = plt.figure()
-
-        feature_i = error_matrix[feature_num, :]
-        plt.hist(feature_i)
-        plt.title("Feature error Histogram for feature number: " +
-                  str(feature_num + 1))
-        name = str(k)+'_feature_' + str(feature_num + 1) + '_histogram'
-        fig.savefig(path + '/feature_error_hists/'+name, bbox_inches='tight')
 
 if __name__ == '__main__':
-    K = [3,5,7,9,15]
+    K = [1,2,3,5,7,9,15]
     for i in K:
         main(i)
