@@ -118,11 +118,7 @@ def main(k):
     # Used for creating Error Matrix
     all_prediction_vectors = []
     all_label_vectors = []
-    ##############
-    ##############
-    ##############
-    # START FROM HERE !!!!!!!!!!!!!!!!!!!!!!!!
-    ##############
+
     test_percent_accurately_predicted_features = []
     error_vectors = []
     for f in testing_files:
@@ -133,13 +129,7 @@ def main(k):
         for (d, patid) in k_nearest_patients[:k]:
             k_nearest_models[patid] = models[patid]
 
-        #print k_nearest_models
-
-
         A = create_columns(A)
-        # A = A.transpose()
-
-
 
         pred_y_per_patient = np.zeros(Y.shape)
 
@@ -216,12 +206,6 @@ def main(k):
                   str(feature_num + 1))
         name = str(k)+'_feature_' + str(feature_num + 1) + '_histogram'
         fig.savefig(path + '/feature_error_hists/'+name, bbox_inches='tight')
-
-
-
-
-
-
 
 if __name__ == '__main__':
     K = [3,5,7,9,15]
