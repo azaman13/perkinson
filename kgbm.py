@@ -10,7 +10,7 @@ import matplotlib.colors as colors
 import seaborn as sns
 import os
 import shutil
-
+import itertools
 
 def read_data(filename):
     f = open(filename)
@@ -22,6 +22,8 @@ def read_data(filename):
 
 
 def create_columns(A):
+    num_col = A.shape[1]
+
     matrix_columns = []
     for i in range(A.shape[1]):
         matrix_columns.append(A[:, i])
@@ -44,6 +46,16 @@ def create_columns(A):
         A = np.column_stack((A, new_vector))
         A = np.column_stack((A, np.divide(1.0, 2.0 + vector)))
     # print 'After', A.shape
+    # A = np.column_stack(A, np.multiply(matrix_columns[0], matrix_columns[1]))
+    # A = np.column_stack(A, np.multiply(matrix_columns[0], matrix_columns[2]))
+
+    l = range(num_col)
+
+    index_comb = itertools.combinations(range(A.shape[1]),2)
+    for (i,j) in index_comb:
+        np.column_stack(  (A,  np.multiply(A[:,i], A[:,j])  )  )
+        #
+        # np.column_stack(A, np.multiply(A[:,i], A[:,j]))
     return A
 
 def find_nearest_patients(A, training_files):
@@ -62,12 +74,12 @@ def main(k):
     random.seed(5)
     NO_MODEL = True
     path = os.environ['HOME']+'/parkinson/gbm_model_figs/'+ str(k) + '_nearest/'
-    feature_path = path + 'feature_error_hists/'
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    else:
-        os.mkdir(path, 0777)
-        os.mkdir(path + 'feature_error_hists/', 0777)
+    # feature_path = path + 'feature_error_hists/'
+    # if os.path.exists(path):
+    #     shutil.rmtree(path)
+    # else:
+    #     os.mkdir(path, 0777)
+        #os.mkdir(path + 'feature_error_hists/', 0777)
 
     # list of models for each patient
     models = {}
@@ -186,7 +198,10 @@ def main(k):
     plt.xlabel("Patient Number")
     plt.title(
         "Percentage of features predicted correctly for patients from Test set")
-    plt.savefig(path + '/'+ str(k)+'_gbm_model_feature_accuracy.png')
+
+    name = path + str(k)+'_gbm_model_feature_accuracy.png'
+    print name, '================='
+    plt.savefig(path + str(k)+'_gbm_model_feature_accuracy.png')
 
     fig2 = plt.figure(figsize=(12,16))
     # Error Matrix Plotting
@@ -195,21 +210,22 @@ def main(k):
     # The Error Matrix Heat map
     ax = sns.heatmap(np.fabs(error_matrix), cmap="YlOrRd" )
     a = ax.get_figure()
+    #a.show()
     a.savefig(path + str(k)+'_test_error_matrix.png')
 
 
-    for feature_num in range(100):
-        # for all 42 patients
-        fig = plt.figure()
-
-        feature_i = error_matrix[feature_num, :]
-        plt.hist(feature_i)
-        plt.title("Feature error Histogram for feature number: " +
-                  str(feature_num + 1))
-        name = str(k)+'_feature_' + str(feature_num + 1) + '_histogram'
-        fig.savefig(path + '/feature_error_hists/'+name, bbox_inches='tight')
+    # for feature_num in range(100):
+    #     # for all 42 patients
+    #     fig = plt.figure()
+    #
+    #     feature_i = error_matrix[feature_num, :]
+    #     plt.hist(feature_i)
+    #     plt.title("Feature error Histogram for feature number: " +
+    #               str(feature_num + 1))
+    #     name = str(k)+'_feature_' + str(feature_num + 1) + '_histogram'
+    #     fig.savefig(path + '/feature_error_hists/'+name, bbox_inches='tight')
 
 if __name__ == '__main__':
-    K = [3,5,7,9,15]
+    K = [1,3,5,7,9,10]
     for i in K:
         main(i)

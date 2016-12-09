@@ -141,22 +141,22 @@ def main():
     # Error Matrix Plotting
     print 'Plotting Heatmap for error matrix'
     # The Error Matrix Heat map
-    ax = sns.heatmap(np.fabs(er_matrix), cmap="YlOrRd", xticklabels=False)
-    ax.set(xlabel='feature number', ylabel='patient id', title='Error Matix on Test set')
+    ax = sns.heatmap(np.fabs(er_matrix.transpose()), cmap="YlOrRd", xticklabels=False)
+    ax.set(xlabel='patient id', ylabel='feature number', title='Error Matix on Test set')
     a = ax.get_figure()
     a.savefig('lasso_model_figs/normalized/lasso_normalized_test_error_matrix.png')
 
     print 'Plotting feature error distributions'
     # plots the feature error distribution
-    for feature_num in range(42):
-        # for all 42 patients
-        fig3 = plt.figure()
-        feature_i = er_matrix[feature_num, :]
-        plt.hist(feature_i)
-        plt.title("Lasso (normalized) Histogram with 'auto' bins for feature #" +
-                  str(feature_num + 1))
-        name = 'lasso_model_figs/normalized/feature_distribution_plots/feature_' + str(feature_num + 1) + '_histogram'
-        fig3.savefig(name, bbox_inches='tight')
+    # for feature_num in range(42):
+    #     # for all 42 patients
+    #     fig3 = plt.figure()
+    #     feature_i = er_matrix[feature_num, :]
+    #     plt.hist(feature_i)
+    #     plt.title("Lasso (normalized) Histogram with 'auto' bins for feature #" +
+    #               str(feature_num + 1))
+    #     name = 'lasso_model_figs/normalized/feature_distribution_plots/feature_' + str(feature_num + 1) + '_histogram'
+    #     fig3.savefig(name, bbox_inches='tight')
 
     # plot the errors
     fig4 = plt.figure()

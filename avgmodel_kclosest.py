@@ -43,7 +43,7 @@ def main(k):
     #     os.mkdir(path + '/feature_error_hists/', 0777)
 
 
-    tolerance = 0.1
+    tolerance = 0.4
     # list of models for each patient
     models = {}
 

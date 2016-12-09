@@ -113,7 +113,7 @@ def main(k):
             # now read patid file
             filename = 'normalized_data/'+patid
             closest_A, closest_Y = read_data(filename)
-            weight = (float(distance) - min_d)/(max_d - min_d)
+            weight = 1.0/((float(distance) - min_d)/(max_d - min_d) + 1)
             # print 'distance', distance, 'min', min_d, 'max', max_d, 'denom', max_d - min_d, 'num', distance - min_d
             closest_Y = weight * closest_Y
 

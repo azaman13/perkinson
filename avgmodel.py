@@ -26,7 +26,7 @@ def main():
     models = {}
 
     # Prediction and Testing feature match tolerance
-    tolerance = 1.0
+    tolerance = 0.1
 
     files = glob.glob(
         "patient_wise_data/*.csv")
@@ -127,7 +127,7 @@ def main():
     plt.ylabel("Percentage correctly predicted features")
     plt.xlabel("Patient Number")
     plt.title(
-        "AVG Nodel: Percentage of features predicted correctly for patients from Test set")
+        "AVG Model: Percentage of features predicted correctly for patients from Test set")
     fig1.savefig('avg_model_figs/not_normalized/avg_model_feature_accuracy.png')
 
 
@@ -143,23 +143,25 @@ def main():
     error = LA.norm(error_matrix)
 
     error_matrix = error_matrix.transpose()
+    print error_matrix
+    print error_matrix.shape
 
     # print 'Plotting feature error distributions'
-    for feature_num in range(42):
-        # for all 42 patients
-        fig = plt.figure()
-
-        feature_i = error_matrix[feature_num, :]
-        plt.hist(feature_i)
-        plt.title("Avg Model: Histogram with 'auto' bins for feature #" +
-                  str(feature_num + 1))
-        name = 'avg_model_figs/not_normalized/feature_distribution_plots/feature_' + str(feature_num + 1) + '_histogram'
-        fig.savefig(name, bbox_inches='tight')
+    # for feature_num in range(42):
+    #     # for all 42 patients
+    #     fig = plt.figure()
+    #
+    #     feature_i = error_matrix[feature_num, :]
+    #     plt.hist(feature_i)
+    #     plt.title("Avg Model: Histogram with 'auto' bins for feature #" +
+    #               str(feature_num + 1))
+    #     name = 'avg_model_figs/not_normalized/feature_distribution_plots/feature_' + str(feature_num + 1) + '_histogram'
+    #     fig.savefig(name, bbox_inches='tight')
 
 
     fig2 = plt.figure(figsize=(12,16))
     print 'Creating heatman for Error matrix'
-    ax = sns.heatmap(error_matrix, cmap="YlOrRd", xticklabels=False)
+    ax = sns.heatmap(np.fabs(error_matrix), cmap="YlOrRd", xticklabels=False)
     ax.set(xlabel='feature number', ylabel='patient id', title='AVG Model Error Matix on Test set')
     a = ax.get_figure()
     a.savefig('avg_model_figs/not_normalized/avg_model_error_matrix.png')
